@@ -1,0 +1,373 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "pi-agent-core 内部结构 · 运行时层与 harness 层",
+    "output": "D3-pi-agent-core内部结构.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "repository": {
+      "url": "git@github-opennerve:liuwei-william/pi.git",
+      "link_mode": "local-only",
+      "revision": "4a12a7b73d94038eb1c8056e11efb9eda100d71f"
+    },
+    "views": [
+      {
+        "id": "runtime",
+        "label": "在跑的运行时层",
+        "focus": [
+          "types",
+          "agent",
+          "agent-loop",
+          "streamfn"
+        ],
+        "note": "今天真正被 coding-agent 使用的就是这一层,2,368 行,小而完整。"
+      },
+      {
+        "id": "seam",
+        "label": "与 pi-ai 的接缝",
+        "focus": [
+          "agent-loop",
+          "streamfn",
+          "proxy"
+        ],
+        "note": "整个包只通过 StreamFn 这一个函数类型接触 LLM,从不构造 HTTP 客户端。"
+      },
+      {
+        "id": "harness",
+        "label": "下一代 harness 层",
+        "focus": [
+          "h-session",
+          "h-compaction",
+          "h-tools",
+          "h-core"
+        ],
+        "note": "会话树、崩溃恢复、压缩、内置工具。大部分操作仍抛 HarnessNotImplemented。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "types",
+      "type": "backend",
+      "label": "types.ts",
+      "sublabel": "443 行 · 全部词汇表",
+      "tag": "先读这个",
+      "pos": [
+        60,
+        150
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/types.ts",
+          "line": 386,
+          "label": "AgentTool"
+        },
+        {
+          "path": "packages/agent/src/types.ts",
+          "line": 428,
+          "label": "AgentEvent"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "agent.ts",
+      "sublabel": "592 行 · Agent 类",
+      "tag": "有状态外壳",
+      "pos": [
+        340,
+        150
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/agent.ts",
+          "line": 173,
+          "label": "class Agent"
+        },
+        {
+          "path": "packages/agent/src/agent.ts",
+          "line": 544,
+          "label": "processEvents 归约"
+        }
+      ]
+    },
+    {
+      "id": "agent-loop",
+      "type": "backend",
+      "label": "agent-loop.ts",
+      "sublabel": "796 行 · 无状态循环",
+      "tag": "★ 核心",
+      "pos": [
+        620,
+        145
+      ],
+      "size": [
+        210,
+        86
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/agent-loop.ts",
+          "line": 155,
+          "end_line": 275,
+          "label": "runLoop 主循环"
+        },
+        {
+          "path": "packages/agent/src/agent-loop.ts",
+          "line": 489,
+          "label": "工具并行执行"
+        }
+      ]
+    },
+    {
+      "id": "streamfn",
+      "type": "security",
+      "label": "StreamFn",
+      "sublabel": "一个函数类型 · 唯一接缝",
+      "tag": "永不抛异常",
+      "pos": [
+        900,
+        150
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/types.ts",
+          "line": 22,
+          "end_line": 33,
+          "label": "契约与注释"
+        },
+        {
+          "path": "packages/agent/src/stream-fn.ts",
+          "label": "全局默认槽"
+        }
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "cloud",
+      "label": "proxy.ts",
+      "sublabel": "370 行 · 走自家后端",
+      "tag": "浏览器可用",
+      "pos": [
+        900,
+        300
+      ],
+      "size": [
+        200,
+        70
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/proxy.ts",
+          "label": "streamProxy"
+        }
+      ]
+    },
+    {
+      "id": "h-core",
+      "type": "frontend",
+      "label": "harness/ 编排",
+      "sublabel": "3,120 行 · AgentHarness + reducer",
+      "tag": "多数未实现",
+      "pos": [
+        340,
+        470
+      ],
+      "size": [
+        210,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/harness/agent-harness.ts",
+          "line": 347,
+          "label": "create 仍抛未实现"
+        },
+        {
+          "path": "packages/agent/src/harness/reducer.ts",
+          "line": 506,
+          "label": "崩溃恢复归约"
+        }
+      ]
+    },
+    {
+      "id": "h-session",
+      "type": "database",
+      "label": "harness/session/",
+      "sublabel": "3,236 行 · 会话树与日志",
+      "tag": "事件溯源",
+      "pos": [
+        620,
+        470
+      ],
+      "size": [
+        210,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/harness/session/types.ts",
+          "line": 67,
+          "label": "Entry 条目树"
+        },
+        {
+          "path": "packages/agent/src/harness/session/jsonl/storage.ts",
+          "label": "JSONL 追加写"
+        }
+      ]
+    },
+    {
+      "id": "h-compaction",
+      "type": "frontend",
+      "label": "harness/compaction/",
+      "sublabel": "1,260 行 · 上下文压缩",
+      "pos": [
+        900,
+        470
+      ],
+      "size": [
+        210,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/harness/compaction/compaction.ts",
+          "line": 374,
+          "label": "findCutPoint 切点"
+        }
+      ]
+    },
+    {
+      "id": "h-tools",
+      "type": "frontend",
+      "label": "harness/tools/ + env/",
+      "sublabel": "1,898 行 · 内置工具与执行环境",
+      "pos": [
+        60,
+        470
+      ],
+      "size": [
+        210,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/harness/tools/read.ts",
+          "label": "最小完整工具"
+        },
+        {
+          "path": "packages/agent/src/harness/env/nodejs.ts",
+          "line": 347,
+          "label": "NodeExecutionEnv"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "运行时层:今天真正在跑的 2,368 行",
+      "wraps": [
+        "types",
+        "agent",
+        "agent-loop",
+        "streamfn"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "harness 层:下一代设计,大半是脚手架",
+      "wraps": [
+        "h-tools",
+        "h-core",
+        "h-session",
+        "h-compaction"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "types-agent",
+      "from": "types",
+      "to": "agent",
+      "label": "词汇表",
+      "labelDy": -28
+    },
+    {
+      "id": "agent-loop-edge",
+      "from": "agent",
+      "to": "agent-loop",
+      "label": "委托执行",
+      "variant": "emphasis",
+      "labelDy": -28
+    },
+    {
+      "id": "loop-streamfn",
+      "from": "agent-loop",
+      "to": "streamfn",
+      "label": "唯一出口",
+      "variant": "emphasis",
+      "labelDy": -28
+    },
+    {
+      "id": "proxy-streamfn",
+      "from": "proxy",
+      "to": "streamfn",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "一个包,两套东西",
+      "items": [
+        "运行时层 2,368 行:今天在跑的",
+        "harness 层 10,267 行:下一代设计",
+        "读源码先只看运行时层"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "为什么接缝这么窄",
+      "items": [
+        "StreamFn 只是一个函数类型",
+        "agent 从不 import 任何 provider",
+        "所以测试时一个 mock 函数就够了"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "循环终止条件只有一个",
+      "items": [
+        "模型没返回工具调用 → 退出",
+        "agent-loop.ts:206",
+        "其余 790 行全是外围:",
+        "错误/取消/事件/钩子/并发/插队"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "harness 的现状",
+      "items": [
+        "agent-harness.ts 有 5 处 HarnessNotImplemented",
+        "下排四块是 harness 的组成部分,不是流水线",
+        "设计文档 docs/harness.md 很值得读",
+        "事件溯源 + WAL,你的 Java 背景是优势"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,383 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Pi Monorepo · 包依赖全景",
+    "output": "D1-包依赖全景.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "repository": {
+      "url": "git@github-opennerve:liuwei-william/pi.git",
+      "link_mode": "local-only",
+      "revision": "4a12a7b73d94038eb1c8056e11efb9eda100d71f"
+    },
+    "views": [
+      {
+        "id": "main-line",
+        "label": "学习主线",
+        "focus": [
+          "telemetry",
+          "ai",
+          "agent",
+          "coding-agent"
+        ],
+        "note": "自底向上的三个核心包,也是 P2 到 P4 的学习顺序。"
+      },
+      {
+        "id": "remote-stack",
+        "label": "远程会话栈",
+        "focus": [
+          "protocol",
+          "client",
+          "server",
+          "coding-agent"
+        ],
+        "note": "实验中的远程会话能力,P5 自选专题。"
+      },
+      {
+        "id": "support",
+        "label": "支撑与工具",
+        "focus": [
+          "tui",
+          "telemetry",
+          "sqlite-node",
+          "evals"
+        ],
+        "note": "UI、埋点、存储后端与评测,都不在主线上。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "sqlite-node",
+      "type": "database",
+      "label": "session-backend-sqlite",
+      "sublabel": "2,389 行 · 会话存储",
+      "pos": [
+        600,
+        100
+      ],
+      "size": [
+        190,
+        64
+      ],
+      "sources": [
+        {
+          "path": "packages/session-backends/sqlite-node/src/index.ts",
+          "label": "index.ts"
+        }
+      ]
+    },
+    {
+      "id": "tui",
+      "type": "frontend",
+      "label": "pi-tui",
+      "sublabel": "16,733 行 · 终端 UI",
+      "tag": "差分渲染",
+      "pos": [
+        880,
+        100
+      ],
+      "size": [
+        190,
+        64
+      ],
+      "sources": [
+        {
+          "path": "packages/tui/src/tui.ts",
+          "label": "Component 模型"
+        }
+      ]
+    },
+    {
+      "id": "telemetry",
+      "type": "external",
+      "label": "telemetry",
+      "sublabel": "935 行 · 埋点契约",
+      "tag": "零依赖",
+      "pos": [
+        60,
+        255
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "sources": [
+        {
+          "path": "packages/telemetry/src/index.ts",
+          "label": "index.ts"
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "type": "backend",
+      "label": "pi-ai",
+      "sublabel": "23,156 行 · LLM 统一 API",
+      "tag": "P2 必读",
+      "pos": [
+        320,
+        250
+      ],
+      "size": [
+        190,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/ai/src/types.ts",
+          "label": "types.ts 领域模型"
+        },
+        {
+          "path": "packages/ai/src/models.ts",
+          "label": "models.ts 注册表"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "pi-agent-core",
+      "sublabel": "12,635 行 · Agent 运行时",
+      "tag": "P3 核心",
+      "pos": [
+        600,
+        250
+      ],
+      "size": [
+        190,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/agent/src/agent-loop.ts",
+          "line": 155,
+          "end_line": 275,
+          "label": "runLoop 主循环"
+        },
+        {
+          "path": "packages/agent/src/types.ts",
+          "line": 28,
+          "label": "StreamFn 接缝"
+        }
+      ]
+    },
+    {
+      "id": "coding-agent",
+      "type": "backend",
+      "label": "pi-coding-agent",
+      "sublabel": "59,014 行 · CLI 产品",
+      "tag": "P4 必读",
+      "pos": [
+        880,
+        250
+      ],
+      "size": [
+        190,
+        80
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/main.ts",
+          "line": 569,
+          "label": "main() 启动"
+        },
+        {
+          "path": "packages/coding-agent/src/core/agent-session.ts",
+          "line": 305,
+          "label": "AgentSession"
+        }
+      ]
+    },
+    {
+      "id": "evals",
+      "type": "external",
+      "label": "pi-evals",
+      "sublabel": "1,277 行 · 行为评测",
+      "tag": "不发布",
+      "pos": [
+        1160,
+        255
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "sources": [
+        {
+          "path": "packages/evals/src/pi-harness.ts",
+          "label": "pi-harness.ts"
+        }
+      ]
+    },
+    {
+      "id": "protocol",
+      "type": "cloud",
+      "label": "pi-protocol",
+      "sublabel": "1,236 行 · CBOR 分帧",
+      "tag": "零依赖",
+      "pos": [
+        60,
+        430
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "packages/protocol/src/index.ts",
+          "label": "index.ts"
+        }
+      ]
+    },
+    {
+      "id": "client",
+      "type": "cloud",
+      "label": "pi-client",
+      "sublabel": "1,225 行 · 远程客户端",
+      "pos": [
+        340,
+        400
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "sources": [
+        {
+          "path": "packages/client/src/index.ts",
+          "label": "index.ts"
+        }
+      ]
+    },
+    {
+      "id": "server",
+      "type": "cloud",
+      "label": "pi-server",
+      "sublabel": "2,299 行 · 远程服务端",
+      "tag": "实验中",
+      "pos": [
+        340,
+        492
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "sources": [
+        {
+          "path": "packages/server/src/index.ts",
+          "label": "index.ts"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "学习主线:自底向上读这三个包",
+      "wraps": [
+        "ai",
+        "agent",
+        "coding-agent"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "telemetry-ai",
+      "from": "telemetry",
+      "to": "ai"
+    },
+    {
+      "id": "ai-agent",
+      "from": "ai",
+      "to": "agent",
+      "label": "StreamFn 唯一接缝",
+      "variant": "emphasis",
+      "labelDy": -34
+    },
+    {
+      "id": "agent-coding",
+      "from": "agent",
+      "to": "coding-agent",
+      "label": "Agent 类 + 工具编排",
+      "variant": "emphasis",
+      "labelDy": -34
+    },
+    {
+      "id": "agent-sqlite",
+      "from": "agent",
+      "to": "sqlite-node",
+      "variant": "dashed"
+    },
+    {
+      "id": "tui-coding",
+      "from": "tui",
+      "to": "coding-agent"
+    },
+    {
+      "id": "coding-evals",
+      "from": "coding-agent",
+      "to": "evals",
+      "variant": "dashed"
+    },
+    {
+      "id": "protocol-client",
+      "from": "protocol",
+      "to": "client"
+    },
+    {
+      "id": "protocol-server",
+      "from": "protocol",
+      "to": "server"
+    },
+    {
+      "id": "client-coding",
+      "from": "client",
+      "to": "coding-agent",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "怎么读这张图",
+      "items": [
+        "箭头 = 被依赖者指向依赖者",
+        "从左往右 = 你的学习顺序",
+        "粗实线是主线,虚线是次要依赖"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "主线三包(P2–P4)",
+      "items": [
+        "ai:把 20+ 厂商收敛成一套消息模型",
+        "agent:把它变成一个 while 循环",
+        "coding-agent:把循环变成能用的 CLI"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "关键事实",
+      "items": [
+        "依赖严格单向,无环",
+        "agent 从不构造 HTTP 客户端",
+        "接缝窄到只有一个函数类型 StreamFn"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "图上没画的边",
+      "items": [
+        "telemetry → agent",
+        "ai → coding-agent(直接用模型)",
+        "ai → server / ai → sqlite-node",
+        "protocol → coding-agent"
+      ]
+    }
+  ]
+}

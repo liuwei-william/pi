@@ -1,0 +1,371 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "pi-coding-agent 内部结构 · 从 CLI 到 Agent",
+    "output": "D4-pi-coding-agent内部结构.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "repository": {
+      "url": "git@github-opennerve:liuwei-william/pi.git",
+      "link_mode": "local-only",
+      "revision": "4a12a7b73d94038eb1c8056e11efb9eda100d71f"
+    },
+    "views": [
+      {
+        "id": "boot",
+        "label": "启动路径",
+        "focus": [
+          "cli",
+          "modes",
+          "session",
+          "sessionfile"
+        ],
+        "note": "cli.ts 24 行只做转发,main.ts:569 负责解析参数并分派到四种运行模式。"
+      },
+      {
+        "id": "core",
+        "label": "领域核心",
+        "focus": [
+          "session",
+          "tools",
+          "prompt",
+          "sessionfile"
+        ],
+        "note": "AgentSession 3,375 行是编排者:模型、工具、会话文件、扩展都在它手里。"
+      },
+      {
+        "id": "extend",
+        "label": "扩展面",
+        "focus": [
+          "extensions",
+          "session",
+          "tools"
+        ],
+        "note": "extensions/types.ts 1,734 行列出了运行时愿意让你拦截的一切,约 35 个事件。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "cli",
+      "type": "external",
+      "label": "cli.ts → main.ts",
+      "sublabel": "998 行 · 入口与分派",
+      "tag": "从这读起",
+      "pos": [
+        60,
+        310
+      ],
+      "size": [
+        210,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/cli.ts",
+          "label": "bin 入口 24 行"
+        },
+        {
+          "path": "packages/coding-agent/src/main.ts",
+          "line": 569,
+          "label": "main() 分派"
+        }
+      ]
+    },
+    {
+      "id": "modes",
+      "type": "frontend",
+      "label": "modes/",
+      "sublabel": "19,533 行 · 四种运行模式",
+      "tag": "interactive 占 6.5k",
+      "pos": [
+        350,
+        310
+      ],
+      "size": [
+        220,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+          "line": 855,
+          "label": "交互模式 init()"
+        },
+        {
+          "path": "packages/coding-agent/src/modes/rpc/rpc-mode.ts",
+          "label": "RPC 模式"
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "type": "backend",
+      "label": "AgentSession",
+      "sublabel": "3,375 行 · 编排者",
+      "tag": "★ 最后读",
+      "pos": [
+        660,
+        305
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/agent-session.ts",
+          "line": 305,
+          "label": "class AgentSession"
+        },
+        {
+          "path": "packages/coding-agent/src/core/agent-session.ts",
+          "line": 1116,
+          "label": "prompt()"
+        }
+      ]
+    },
+    {
+      "id": "agentcore",
+      "type": "external",
+      "label": "pi-agent-core",
+      "sublabel": "Agent 类由它提供",
+      "pos": [
+        970,
+        310
+      ],
+      "size": [
+        200,
+        76
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "core/tools/",
+      "sublabel": "4,168 行 · 7 个内置工具",
+      "tag": "read/bash/edit/write…",
+      "pos": [
+        350,
+        140
+      ],
+      "size": [
+        220,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/tools/read.ts",
+          "label": "标准工具模板"
+        },
+        {
+          "path": "packages/coding-agent/src/core/tools/index.ts",
+          "label": "三种预设组合"
+        }
+      ]
+    },
+    {
+      "id": "prompt",
+      "type": "backend",
+      "label": "system-prompt.ts",
+      "sublabel": "162 行 · 提示词组装",
+      "tag": "信息密度最高",
+      "pos": [
+        660,
+        140
+      ],
+      "size": [
+        220,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/system-prompt.ts",
+          "label": "buildSystemPrompt()"
+        },
+        {
+          "path": "packages/coding-agent/src/core/skills.ts",
+          "line": 355,
+          "label": "技能注入提示词"
+        }
+      ]
+    },
+    {
+      "id": "extensions",
+      "type": "security",
+      "label": "core/extensions/",
+      "sublabel": "3,943 行 · 插件系统",
+      "tag": "约 35 个事件",
+      "pos": [
+        970,
+        480
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/extensions/types.ts",
+          "line": 1198,
+          "label": "ExtensionAPI 契约"
+        },
+        {
+          "path": "packages/coding-agent/src/core/extensions/loader.ts",
+          "label": "jiti 运行时加载 .ts"
+        }
+      ]
+    },
+    {
+      "id": "sessionfile",
+      "type": "database",
+      "label": "session-manager.ts",
+      "sublabel": "1,714 行 · JSONL 会话树",
+      "tag": "fork/tree 靠它",
+      "pos": [
+        660,
+        480
+      ],
+      "size": [
+        220,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/session-manager.ts",
+          "label": "追加式 JSONL"
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "type": "cloud",
+      "label": "settings + resource-loader",
+      "sublabel": "2,386 行 · 配置与资源发现",
+      "pos": [
+        350,
+        480
+      ],
+      "size": [
+        220,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/coding-agent/src/core/settings-manager.ts",
+          "label": "两层设置合并"
+        },
+        {
+          "path": "packages/coding-agent/src/core/resource-loader.ts",
+          "label": "技能/扩展/提示词发现"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "core/ 领域层 28,779 行",
+      "wraps": [
+        "session",
+        "tools",
+        "prompt",
+        "extensions",
+        "sessionfile",
+        "settings"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "cli-modes",
+      "from": "cli",
+      "to": "modes",
+      "label": "分派运行模式",
+      "labelDy": -28
+    },
+    {
+      "id": "modes-session",
+      "from": "modes",
+      "to": "session",
+      "label": "订阅事件并渲染",
+      "variant": "emphasis",
+      "labelDy": -28
+    },
+    {
+      "id": "session-agentcore",
+      "from": "session",
+      "to": "agentcore",
+      "label": "包装 Agent",
+      "variant": "emphasis",
+      "labelDy": -28
+    },
+    {
+      "id": "tools-prompt",
+      "from": "tools",
+      "to": "prompt",
+      "label": "贡献 promptSnippet",
+      "labelDy": -34
+    },
+    {
+      "id": "prompt-session",
+      "from": "prompt",
+      "to": "session"
+    },
+    {
+      "id": "sessionfile-session",
+      "from": "sessionfile",
+      "to": "session",
+      "variant": "dashed"
+    },
+    {
+      "id": "extensions-agentcore",
+      "from": "extensions",
+      "to": "agentcore",
+      "label": "包装为 AgentTool",
+      "variant": "security",
+      "labelDy": -28
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "别线性读这 59k 行",
+      "items": [
+        "先跑 examples/sdk/01-minimal.ts",
+        "再读 main.ts:569 看启动分派",
+        "最后才读 AgentSession"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "四种运行模式",
+      "items": [
+        "interactive:TUI,stdin/stdout 都是 TTY 时",
+        "print:一次性文本输出",
+        "json:结构化事件流",
+        "rpc:JSONL over stdio,供别的进程驱动"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "两个反直觉的设计",
+      "items": [
+        "工具自带 UI 渲染器(renderCall/renderResult)",
+        "系统提示词是拼装的,不是写死的",
+        "工具集变了提示词会重建"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "图上没画的",
+      "items": [
+        "settings/resource-loader 实际由 agent-session-services.ts 和 sdk.ts 装配进来",
+        "core/compaction/ 1,530 行上下文压缩",
+        "utils/ 3,522 行叶子工具 · cli/ 1,825 行参数解析",
+        "client/ + server/ 远程会话接入"
+      ]
+    }
+  ]
+}

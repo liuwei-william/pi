@@ -1,0 +1,330 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "上下文压缩 Compaction · 从触发到重建",
+    "output": "D11-上下文压缩.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "views": [
+      {
+        "id": "main",
+        "label": "主干:一次压缩",
+        "focus": [
+          "check",
+          "gate",
+          "prep",
+          "serial",
+          "summon",
+          "append",
+          "rebuild"
+        ],
+        "note": "检查 → 判定 → 找切点 → 序列化 → LLM 摘要 → 追加 entry → 重建 context。"
+      },
+      {
+        "id": "trigger",
+        "label": "触发路径",
+        "focus": [
+          "check",
+          "gate",
+          "retry"
+        ],
+        "note": "threshold 预防性压缩;overflow 已经爆了要压缩;overflow 且可重试时删消息再跑一次。"
+      },
+      {
+        "id": "escape",
+        "label": "兜底与扩展点",
+        "focus": [
+          "prefix",
+          "hook",
+          "retry"
+        ],
+        "note": "单 turn 超预算时多一次前缀摘要,用 --- 拼进历史摘要;扩展可取消压缩或直接给一份自定义摘要。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "session",
+      "label": "触发与收尾 · AgentSession"
+    },
+    {
+      "id": "core",
+      "label": "准备与序列化 · core/compaction"
+    },
+    {
+      "id": "llm",
+      "label": "摘要生成 · LLM 调用"
+    },
+    {
+      "id": "store",
+      "label": "会话树 · SessionManager"
+    },
+    {
+      "id": "ext",
+      "label": "扩展点与例外",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "decide",
+      "label": "判定",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "build",
+      "label": "准备与摘要",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "emphasis"
+    },
+    {
+      "id": "settle",
+      "label": "落盘与重建",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "check",
+    "gate",
+    "prep",
+    "serial",
+    "summon",
+    "append",
+    "rebuild"
+  ],
+  "nodes": [
+    {
+      "id": "check",
+      "lane": "session",
+      "col": 0,
+      "type": "backend",
+      "label": "回复后检查",
+      "sublabel": "回复结束后 / 发 prompt 前",
+      "tag": "_checkCompaction()",
+      "width": 158
+    },
+    {
+      "id": "gate",
+      "lane": "session",
+      "col": 1,
+      "type": "security",
+      "label": "触发判定",
+      "sublabel": "ctx > window − 16384",
+      "tag": "3 条自动路径",
+      "width": 158
+    },
+    {
+      "id": "prep",
+      "lane": "core",
+      "col": 2,
+      "type": "backend",
+      "label": "prepareCompaction()",
+      "sublabel": "找切点 · 保留最近 20k",
+      "tag": "绝不切在 tool result",
+      "width": 176
+    },
+    {
+      "id": "serial",
+      "lane": "core",
+      "col": 3,
+      "type": "database",
+      "label": "serializeConversation()",
+      "sublabel": "消息拍平成纯文本",
+      "tag": "防模型接着续写",
+      "width": 186
+    },
+    {
+      "id": "prefix",
+      "lane": "llm",
+      "col": 4,
+      "type": "cloud",
+      "label": "turn 前缀摘要",
+      "sublabel": "单 turn 超预算时追加",
+      "width": 158
+    },
+    {
+      "id": "summon",
+      "lane": "llm",
+      "col": 3,
+      "type": "cloud",
+      "label": "生成结构化摘要",
+      "sublabel": "首次生成 / 增量 merge",
+      "tag": "Goal·Progress·Next",
+      "width": 168
+    },
+    {
+      "id": "append",
+      "lane": "store",
+      "col": 4,
+      "type": "database",
+      "label": "追加 CompactionEntry",
+      "sublabel": "append-only · 原消息不删",
+      "tag": "firstKeptEntryId",
+      "width": 162
+    },
+    {
+      "id": "rebuild",
+      "lane": "session",
+      "col": 5,
+      "type": "backend",
+      "label": "重建 context",
+      "sublabel": "state.messages ← 会话树",
+      "tag": "下一次请求",
+      "width": 168
+    },
+    {
+      "id": "hook",
+      "lane": "ext",
+      "col": 2,
+      "type": "external",
+      "label": "session_before_compact",
+      "sublabel": "扩展可取消 / 可替换",
+      "width": 186
+    },
+    {
+      "id": "retry",
+      "lane": "ext",
+      "col": 5,
+      "type": "backend",
+      "label": "重试一次",
+      "sublabel": "仅 overflow 路径",
+      "tag": "agent.continue()",
+      "width": 158
+    }
+  ],
+  "edges": [
+    {
+      "id": "check-gate",
+      "from": "check",
+      "to": "gate",
+      "variant": "default"
+    },
+    {
+      "id": "gate-prep",
+      "from": "gate",
+      "to": "prep",
+      "label": "reason: threshold / overflow",
+      "variant": "emphasis"
+    },
+    {
+      "id": "prep-serial",
+      "from": "prep",
+      "to": "serial",
+      "variant": "emphasis"
+    },
+    {
+      "id": "serial-summon",
+      "from": "serial",
+      "to": "summon",
+      "label": "文本,不是消息数组",
+      "variant": "emphasis"
+    },
+    {
+      "id": "summon-append",
+      "from": "summon",
+      "to": "append",
+      "variant": "emphasis"
+    },
+    {
+      "id": "append-rebuild",
+      "from": "append",
+      "to": "rebuild",
+      "variant": "emphasis"
+    },
+    {
+      "id": "prep-hook",
+      "from": "prep",
+      "to": "hook",
+      "label": "先问扩展",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "hook-append",
+      "from": "hook",
+      "to": "append",
+      "label": "自定义摘要 · 跳过 LLM",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "rebuild-retry",
+      "from": "rebuild",
+      "to": "retry",
+      "label": "删掉失败消息",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "summon-prefix",
+      "from": "summon",
+      "to": "prefix",
+      "label": "split turn:再调一次",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "prefix-append",
+      "from": "prefix",
+      "to": "append",
+      "label": "拼在历史摘要后",
+      "variant": "dashed",
+      "role": "branch"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "什么时候压缩",
+      "items": [
+        "threshold:ctx > contextWindow − reserveTokens(默认 16384)",
+        "overflow:请求爆了 / 回复被截断 → 压缩后重试一次",
+        "overflow 但回复已完成:压缩,不重试",
+        "手动:/compact [指令],跳过判定直接进 prepare"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "切点铁律",
+      "items": [
+        "合法切点:user / assistant / BashExecution / custom",
+        "绝不切在 tool result — tool_call 必须和结果成对",
+        "正常切 turn 边界;单 turn 超预算才切进 turn 内部"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "压缩后模型看到什么",
+      "items": [
+        "sessionManager.buildSessionContext() 重建,由 AgentSession 调用",
+        "system prompt + summary + firstKeptEntryId 之后的消息",
+        "被压缩的老消息仍在 jsonl 和会话树里,只是不再发送",
+        "只追加一条 CompactionEntry + 一个指针,历史不可变",
+        "摘要末尾追加 <read-files>/<modified-files>,跨多次压缩累积"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "三个防压缩风暴的守卫",
+      "items": [
+        "sameModel:换了大窗口模型,旧模型的 overflow 不算数",
+        "早于压缩点的 assistant 消息一律跳过(陈旧 usage)",
+        "_overflowRecoveryAttempted:重试只给一次机会"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "图上没画的",
+      "items": [
+        "/tree 切分支时的 branch summarization,同一套摘要格式",
+        "落盘后还会 emit session_compact 事件给扩展",
+        "packages/agent/src/harness/compaction 另有一份重构版"
+      ]
+    }
+  ]
+}
